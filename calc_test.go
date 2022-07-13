@@ -2,31 +2,50 @@ package main
 
 import (
 	"github.com/stretchr/testify/assert"
-	"os"
+	"github.com/stretchr/testify/suite"
 	"testing"
 )
 
-func TestCalculator_Add(t *testing.T) {
-	myCalc := Calculator{Num1: 4, Num2: 4}
-	actual := myCalc.Add()
-	expected := 9
-	assert.Equal(t, expected, actual, "it should return 8")
-
+type CalculatorTestSuite struct {
+	suite.Suite
+	calcService Calculator
 }
-func TestCalculator_Sub(t *testing.T) {
-	myCalc := Calculator{Num1: 5, Num2: 4}
-	actual := myCalc.Sub()
+
+func (suite *CalculatorTestSuite) SetupTest() {
+	suite.calcService = Calculator{}
+}
+
+func (suite *CalculatorTestSuite) TestCalculator_Add() {
+	testTable := []struct {
+		num1 int
+		num2 int
+		res  int
+	}{
+		{4, 4, 8},
+		{-4, 5, -1},
+	}
+	for _, table := range testTable {
+		suite.calcService.Num1 = table.num1
+		suite.calcService.Num2 = table.num2
+		actual, err := suite.calcService.Add()
+		if err != nil {
+			assert.NotNil(suite.T(), err)
+			assert.Equal(suite.T(), table.res, actual)
+		} else {
+			assert.Nil(suite.T(), err)
+			assert.Equal(suite.T(), table.res, actual)
+
+		}
+	}
+}
+func (suite *CalculatorTestSuite) TestCalculator_Sub() {
+	suite.calcService.Num1 = 5
+	suite.calcService.Num2 = 4
+	actual := suite.calcService.Sub()
 	expected := 1
-	assert.Equal(t, expected, actual, "it should return 1")
+	assert.Equal(suite.T(), expected, actual, "it should return 1")
 }
 
-func TestMainApp(t *testing.T) {
-	os.Args = []string{"-num1", "2", "-num2", "3", "-opr", "add"}
-	main()
+func TestCalculatorTestSuite(t *testing.T) {
+	suite.Run(t, new(CalculatorTestSuite))
 }
-
-//func TestMainApp_Sub(t *testing.T) {
-//	//os.Args[5] = "sub"
-//	os.Args = []string{"-num1", "1", "-num2", "3", "-opr", "sub"}
-//	main()
-//}
